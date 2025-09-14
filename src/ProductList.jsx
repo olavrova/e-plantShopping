@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './ProductList.css'
 import CartItem from './CartItem';
-import CartItem from './CartItem';
+import { addItem, } from './CartSlice';
+import { useDispatch, useSelector } from 'react-redux';
+
 function ProductList({ onHomeClick }) {
+    const dispatch = useDispatch();
     const [showCart, setShowCart] = useState(false);
     const [showPlants, setShowPlants] = useState(false); // State to control the visibility of the About Us page
-    const [addedToCart, setAddedToCart] = useState({});
     const plantsArray = [
         {
             category: "Air Purifying Plants",
@@ -213,6 +215,13 @@ function ProductList({ onHomeClick }) {
             ]
         }
     ];
+    const initialAddedToCart = Object.fromEntries(
+          plantsArray.flatMap(category =>
+            category.plants.map(plant => [plant.name, false])
+          )
+);
+    const [addedToCart, setAddedToCart] = useState(initialAddedToCart); // State to track if a product has been added to the cart.
+
     const styleObj = {
         backgroundColor: '#4CAF50',
         color: '#fff!important',
@@ -253,7 +262,7 @@ function ProductList({ onHomeClick }) {
         e.preventDefault();
         setShowCart(false);
     };
-    const handleAddToCart = (product) => {
+    const handleAddToCart = (product) => {// Log the product being added for debugging
         dispatch(addItem(product)); // Dispatch the action to add the product to the cart (Redux action)
 
         setAddedToCart((prevState) => ({ // Update the local state to reflect that the product has been added
@@ -283,7 +292,7 @@ function ProductList({ onHomeClick }) {
             </div>
             {!showCart ? (
                 <div className="product-grid">
-                    {plantsArray.map((category, index) => ( // Loop through each category in plantsArray
+{plantsArray.map((category, index) => ( // Loop through each category in plantsArray
   <div key={index}> {/* Unique key for each category div */}
     <h1>
       <div>{category.category}</div> {/* Display the category name */}
@@ -302,9 +311,14 @@ function ProductList({ onHomeClick }) {
           <div className="product-cost">${plant.cost}</div> {/* Display plant cost */}
           <button
             className="product-button"
+            disabled={addedToCart[plant.name]}
+            style={{
+             backgroundColor: addedToCart[plant.name] ? 'gray': 'green' ,
+             color: 'white'
+            }}
             onClick={() => handleAddToCart(plant)} // Handle adding plant to cart
           >
-            Add to Cart
+            {addedToCart[plant.name] ? 'Added to Cart': 'Add to Cart' }
           </button>
         </div>
       ))}
